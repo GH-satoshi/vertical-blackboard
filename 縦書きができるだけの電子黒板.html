@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>縦書きができるだけの電子黒板</title>
+    <!--縦書きができるだけで、他の機能なし。ブラウザのLacalStorageにデータ保存可-->
+
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000000;
+    }    
+    #kokuban {
+        width: 100vw;
+        height: 100vh;
+        background-color: rgb(0, 75, 0);
+        padding: 20px;
+        font-size: 30px;
+        font-family: serif;         /*明朝体指定*/
+        color: #ffffff;
+        line-height: 1.6em;
+        letter-spacing: 0.16em;
+        overflow-x: scroll;
+
+        writing-mode: vertical-rl;  /*デフォルトはhorizontal-tb（横書きで上から下方向）。vertical-rlは縦書きで右から下方向*/
+        -webkit-writing-mode: vertical-rl;
+        -ms-writing-mode: tb-rl;
+        text-orientation: upright;    /*デフォルトはmixed（半角英数字は横書き）*/
+        cursor: vertical-text;      /*カーソルも縦書き仕様*/
+    }
+    #menu {
+        width: 50px;
+        height: 100vh;
+        background-color: #452c01;
+    }
+    #today {
+        padding-top: 16px;
+        font-size: 30px;
+        font-family: serif;
+        font-weight: bold;
+        color: #ffffff;
+        line-height: 1.6em;
+        letter-spacing: 0.16em;
+        writing-mode: vertical-rl;
+        -webkit-writing-mode: vertical-rl;
+        -ms-writing-mode: tb-rl;
+        text-orientation: upright;
+    }
+    .btn {
+        margin: 5px;
+        padding: 2px 3px;
+        text-decoration :none;
+        text-align: center;
+    }
+    </style>
+</head>
+
+
+<body>
+    <div id="kokuban" contenteditable="true" spellcheck="false" autofocus></div>    <!--contenteditableは、利用者にDOMの編集を許可することができる属性。メッチャ使える-->
+    <div id="menu">
+        <p id="today"></p>
+        <input type="button" value="保存" class="btn" onclick=save();></input><br>
+        <input type="button" value="読込" class="btn" onclick=load();></input>
+    </div>
+    
+    <script>
+        // データの読み込みと保存（LocalStrage使用） //
+        //function load() {
+        //    let kokubanData = "";
+        //    if(!localStorage.getItem('kokubanData')) {
+        //        kokubanData = "保存データはありません。";
+        //    } else {
+        //        kokubanData = localStorage.getItem('kokubanData');
+        //    }
+        //    document.getElementById("kokuban").innerHTML = kokubanData;
+        //    console.log(kokubanData);
+        //}
+        //function save() {
+        //    let kokubanData = document.getElementById("kokuban").innerHTML;
+        //    localStorage.setItem('kokubanData', kokubanData);
+        //    console.log(kokubanData);
+        //}
+
+
+        // データの読み込みと保存（File System Access API使用） //
+        let fileHandle;
+        async function load() {
+            try {
+                [fileHandle] = await window.showOpenFilePicker();   //ファイルピッカーを開く
+                const file = await fileHandle.getFile();        //ファイルの中身を取得する
+                const content = await file.text();
+                document.getElementById('kokuban').innerText = content;
+            } catch (error) {
+                console.error('Error reading file:', error);
+            }
+        }
+        async function save() {
+            try {
+                if (!fileHandle) {
+                [fileHandle] = await window.showSaveFilePicker();
+                }
+                const writable = await fileHandle.createWritable();
+                const content = document.getElementById('kokuban').innerText;
+                await writable.write(content);
+                await writable.close();
+            } catch (error) {
+                console.error('Error saving file:', error);
+            }
+        }
+
+
+        // 日付取得・表示 //
+        let date = new Date();
+        let year = date.getFullYear();
+        year = kanjiConverter(year);
+        let month = date.getMonth() + 1;
+        month = kanjiConverter(month);
+        let day = date.getDate();
+        day = kanjiConverter(day);
+        let week = date.getDay();    //以下、曜日取得
+        let weekItems = ["日", "月", "火", "水", "木", "金", "土"];
+        let dayOfWeek = weekItems[week];
+        document.getElementById("today").innerHTML = `${year}年${month}月${day}日（${dayOfWeek}）`;
+        
+        // アラビア数字を漢数字に変換 //
+        function kanjiConverter(num){
+            switch(typeof num){
+                case 'number' : num+= '';
+                case 'string' : num = num.replace(/\D+/g,'');break;
+                default : return false;
+            }
+            let kanji_n = ['○','一','二','三','四','五','六','七','八','九'];
+
+            type ='each';
+            if(type=='each'||!type||num.length/4>place.length-3){
+                return num.replace(/\d/g,s=>kanji_n[parseInt(s)]);
+            }
+            
+            let n,str='';
+            let arr=num.match(/\d{1,4}?(?=(\d{4})*$)/gm);
+            for(let i=0,k=arr.length-1;i<=k;i++){
+                if(!parseInt(arr[i])) continue;
+                for(let j=0,l=arr[i].length-1;j<=l;j++){
+                    n=parseInt(arr[i][j]);
+                    if(!n) continue;
+                    if(j==l) str+=kanji_n[n];
+                }
+            }
+            return str;
+        }
+
+
+        /*
+        // 引数num：ここの数値が漢数字変換される。number型,string型どちらかで指定。
+        // 引数type：変換内容を決められる。string型で指定。eachかplace。
+        function kanjiConverter(num,type){
+            switch(typeof num){
+                case 'number' : num+= '';
+                case 'string' : num = num.replace(/\D+/g,'');break;
+                default : return false;
+            }
+             if(type&&type!='each'&&type!='place') return false;
+
+            let kanji_n = ['○','一','二','三','四','五','六','七','八','九'];
+            let kanji_p = ['零','十','百','千','万','億','兆','京'];
+
+            if(type=='each'||!type||num.length/4>place.length-3){
+                return num.replace(/\d/g,s=>kanji_n[parseInt(s)]);
+            }
+             if(!parseInt(num)) return kanji_p[0];
+            let n,str='';
+            let arr=num.match(/\d{1,4}?(?=(\d{4})*$)/gm);
+            for(let i=0,k=arr.length-1;i<=k;i++){
+                if(!parseInt(arr[i])) continue;
+                for(let j=0,l=arr[i].length-1;j<=l;j++){
+                    n=parseInt(arr[i][j]);
+                    if(!n) continue;
+                    if(j==l) str+=kanji_n[n];
+                    else str+=(n>1?kanji_n[n]:'')+kanji_p[l-j];
+                }
+                if(i!=k) str+=kanji_p[k-i+3];
+            }
+            return str;
+        }        
+        */
+
+    </script>
+
+</body>
+</html>
