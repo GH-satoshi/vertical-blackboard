@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>縦書きができるだけの電子黒板</title>
-    <!--縦書きができるだけで、他の機能なし。ブラウザのLacalStorageにデータ保存可-->
+    <!--縦書きができ、ブラウザのLacalStorageに保存可-->
 
     <style>
     * {
@@ -32,11 +32,11 @@
         letter-spacing: 0.16em;
         overflow-x: scroll;
 
-        writing-mode: vertical-rl;  /*デフォルトはhorizontal-tb（横書きで上から下方向）。vertical-rlは縦書きで右から下方向*/
+        writing-mode: vertical-rl;    /*デフォルトはhorizontal-tb（横書きで上から下方向）。vertical-rlは縦書きで右から下方向*/
         -webkit-writing-mode: vertical-rl;
         -ms-writing-mode: tb-rl;
         text-orientation: upright;    /*デフォルトはmixed（半角英数字は横書き）*/
-        /* cursor: vertical-text;      カーソルも縦書き仕様*/
+        cursor: vertical-text;        /*カーソルも縦書き仕様*/
     }
     #menu {
         width: 50px;
@@ -67,7 +67,7 @@
 
 
 <body>
-    <div id="kokuban" contenteditable="true" spellcheck="false" autofocus></div>    <!--contenteditableは、利用者にDOMの編集を許可することができる属性。メッチャ使える-->
+    <div id="kokuban" contenteditable="true" spellcheck="false" autofocus></div>    <!--contenteditableで利用者にDOMの編集を許可する-->
     <div id="menu">
         <p id="today"></p>
         <input type="button" value="保存" class="btn" onclick=save();></input><br>
@@ -91,7 +91,6 @@
             localStorage.setItem('kokubanData', kokubanData);
             console.log(kokubanData);
         }
-
 
         // データの読み込みと保存（File System Access API使用） //
         //let fileHandle;
@@ -118,7 +117,6 @@
         //        console.error('Error saving file:', error);
         //    }
         //}
-
 
         // 日付取得・表示 //
         let date = new Date();
@@ -159,42 +157,6 @@
             }
             return str;
         }
-
-
-        /*
-        // 引数num：ここの数値が漢数字変換される。number型,string型どちらかで指定。
-        // 引数type：変換内容を決められる。string型で指定。eachかplace。
-        function kanjiConverter(num,type){
-            switch(typeof num){
-                case 'number' : num+= '';
-                case 'string' : num = num.replace(/\D+/g,'');break;
-                default : return false;
-            }
-             if(type&&type!='each'&&type!='place') return false;
-
-            let kanji_n = ['○','一','二','三','四','五','六','七','八','九'];
-            let kanji_p = ['零','十','百','千','万','億','兆','京'];
-
-            if(type=='each'||!type||num.length/4>place.length-3){
-                return num.replace(/\d/g,s=>kanji_n[parseInt(s)]);
-            }
-             if(!parseInt(num)) return kanji_p[0];
-            let n,str='';
-            let arr=num.match(/\d{1,4}?(?=(\d{4})*$)/gm);
-            for(let i=0,k=arr.length-1;i<=k;i++){
-                if(!parseInt(arr[i])) continue;
-                for(let j=0,l=arr[i].length-1;j<=l;j++){
-                    n=parseInt(arr[i][j]);
-                    if(!n) continue;
-                    if(j==l) str+=kanji_n[n];
-                    else str+=(n>1?kanji_n[n]:'')+kanji_p[l-j];
-                }
-                if(i!=k) str+=kanji_p[k-i+3];
-            }
-            return str;
-        }        
-        */
-
     </script>
 
 </body>
