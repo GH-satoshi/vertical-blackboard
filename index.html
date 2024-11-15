@@ -76,48 +76,48 @@
     
     <script>
         // データの読み込みと保存（LocalStrage使用） //
-        //function load() {
-        //    let kokubanData = "";
-        //    if(!localStorage.getItem('kokubanData')) {
-        //        kokubanData = "保存データはありません。";
-        //    } else {
-        //        kokubanData = localStorage.getItem('kokubanData');
-        //    }
-        //    document.getElementById("kokuban").innerHTML = kokubanData;
-        //    console.log(kokubanData);
-        //}
-        //function save() {
-        //    let kokubanData = document.getElementById("kokuban").innerHTML;
-        //    localStorage.setItem('kokubanData', kokubanData);
-        //    console.log(kokubanData);
-        //}
+        function load() {
+            let kokubanData = "";
+            if(!localStorage.getItem('kokubanData')) {
+                kokubanData = "保存データはありません。";
+            } else {
+                kokubanData = localStorage.getItem('kokubanData');
+            }
+            document.getElementById("kokuban").innerHTML = kokubanData;
+            console.log(kokubanData);
+        }
+        function save() {
+            let kokubanData = document.getElementById("kokuban").innerHTML;
+            localStorage.setItem('kokubanData', kokubanData);
+            console.log(kokubanData);
+        }
 
 
         // データの読み込みと保存（File System Access API使用） //
-        let fileHandle;
-        async function load() {
-            try {
-                [fileHandle] = await window.showOpenFilePicker();   //ファイルピッカーを開く
-                const file = await fileHandle.getFile();        //ファイルの中身を取得する
-                const content = await file.text();
-                document.getElementById('kokuban').innerText = content;
-            } catch (error) {
-                console.error('Error reading file:', error);
-            }
-        }
-        async function save() {
-            try {
-                if (!fileHandle) {
-                [fileHandle] = await window.showSaveFilePicker();
-                }
-                const writable = await fileHandle.createWritable();
-                const content = document.getElementById('kokuban').innerText;
-                await writable.write(content);
-                await writable.close();
-            } catch (error) {
-                console.error('Error saving file:', error);
-            }
-        }
+        //let fileHandle;
+        //async function load() {
+        //    try {
+        //        [fileHandle] = await window.showOpenFilePicker();   //ファイルピッカーを開く
+        //        const file = await fileHandle.getFile();        //ファイルの中身を取得する
+        //        const content = await file.text();
+        //        document.getElementById('kokuban').innerText = content;
+        //    } catch (error) {
+        //        console.error('Error reading file:', error);
+        //    }
+        //}
+        //async function save() {
+        //    try {
+        //        if (!fileHandle) {
+        //        [fileHandle] = await window.showSaveFilePicker();
+        //        }
+        //        const writable = await fileHandle.createWritable();
+        //        const content = document.getElementById('kokuban').innerText;
+        //        await writable.write(content);
+        //        await writable.close();
+        //    } catch (error) {
+        //        console.error('Error saving file:', error);
+        //    }
+        //}
 
 
         // 日付取得・表示 //
